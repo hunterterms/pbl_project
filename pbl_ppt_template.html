@@ -6,105 +6,35 @@
     <title>UniHub | PBL Presentation 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
-        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
-        .gradient-text { background: linear-gradient(135deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .mesh-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
-            background: radial-gradient(circle at 15% 50%, rgba(96, 165, 250, 0.08), transparent 25%),
-                        radial-gradient(circle at 85% 30%, rgba(192, 132, 252, 0.08), transparent 25%);
-        }
+        body { background-color: #020617; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-text { background: linear-gradient(90deg, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
-    <div class="mesh-bg"></div>
-
-    <nav class="fixed w-full z-50 glass border-b border-slate-800/50 px-6 md:px-12 py-4 flex justify-between items-center transition-all">
+    <nav class="fixed w-full z-50 glass border-b border-slate-800/50 px-8 py-4 flex justify-between items-center">
         <div class="flex items-center gap-4">
-            <div class="bg-white p-1 rounded-lg flex items-center justify-center shadow-lg h-12 w-12">
-                <span class="text-slate-900 font-black text-xs text-center leading-tight">MUJ</span>
+            <div class="bg-white p-1 rounded flex items-center justify-center shadow-md" style="height: 48px; width: 48px;">
+                <span class="text-black font-black text-[10px]">MUJ</span>
             </div>
             <div class="flex flex-col text-left">
-                <span class="text-lg font-black text-white leading-none tracking-tight">UNI<span class="text-blue-500">HUB</span></span>
-                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Dept. of Computer Science & Engineering</span>
+                <span class="text-xl font-black text-white leading-none uppercase tracking-tighter">UNI<span class="text-blue-500 italic">HUB</span></span>
+                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Dept. of Computer Science & Engineering</span>
             </div>
         </div>
-        <div class="hidden md:flex gap-8 text-[11px] uppercase tracking-widest font-bold text-slate-400">
-            <a href="#problem" class="hover:text-blue-400 transition-colors duration-300">Problem</a>
-            <a href="#gap" class="hover:text-purple-400 transition-colors duration-300">Innovation</a>
-            <a href="#methodology" class="hover:text-blue-400 transition-colors duration-300">Architecture</a>
-            <a href="#results" class="hover:text-green-400 transition-colors duration-300">Results</a>
+        <div class="hidden md:flex gap-8 text-[11px] uppercase tracking-widest font-bold opacity-70">
+            <a href="#problem" class="hover:text-blue-400 transition">Problem</a>
+            <a href="#methodology" class="hover:text-blue-400 transition">Methodology</a>
+            <a href="#results" class="hover:text-blue-400 transition">Results</a>
+            <a href="#team" class="hover:text-blue-400 transition">Team</a>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-6 pt-40 pb-32 space-y-32">
+    <main class="max-w-6xl mx-auto px-6 pt-48 pb-32 space-y-32">
         
-        <section class="text-center space-y-8">
-            <div class="inline-flex items-center gap-2 px-4 py-2 border border-slate-700/50 rounded-full bg-slate-800/30 text-slate-400 text-[10px] font-mono uppercase tracking-widest hover:border-blue-500/50 transition">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                ID: 2427030668, 2427030772
-            </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold uppercase leading-tight tracking-tight">
-                Intelligent Campus <br>
-                <span class="gradient-text">Marketplace</span>
-            </h1>
-            <p class="text-slate-400 max-w-3xl mx-auto text-lg leading-relaxed border-l-4 border-blue-500/50 pl-6 text-left glass p-6 rounded-r-xl">
-                "UniHub bridges the digital gap in higher education by creating a <strong>trust-first, serverless ecosystem</strong> that centralizes peer-to-peer commerce and social engagement, exclusively for verified university students."
-            </p>
-        </section>
-
-        <section id="problem" class="grid md:grid-cols-2 gap-8">
-            <div class="glass p-10 rounded-[2rem] border-t-4 border-blue-600 flex flex-col justify-center">
-                <h2 class="text-3xl font-black mb-6 flex items-center gap-3">
-                    <i class="fas fa-exclamation-circle text-blue-500"></i> Problem Statement
-                </h2>
-                <p class="text-slate-400 leading-7 text-justify mb-4">
-                    University campuses suffer from <strong class="text-slate-200">digital fragmentation</strong>. Students must navigate a chaotic mix of physical boards, unstructured WhatsApp groups, and untrusted global platforms like Facebook Marketplace to trade items or find events.
-                </p>
-                <p class="text-slate-400 leading-7 text-justify">
-                    This leads to high <strong>scam risks</strong> (stranger danger), inefficient resource circulation (textbooks going to waste), and a lack of specific academic context in search results.
-                </p>
-            </div>
-
-            <div class="space-y-6" id="gap">
-                <div class="glass p-8 rounded-3xl border-l-4 border-purple-500/50 hover:bg-slate-800/50 transition">
-                    <h3 class="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <i class="fas fa-book-open"></i> Literature Review
-                    </h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Analyzed <strong>Facebook Marketplace & eBay</strong>: Found they lack student verification and hyper-local relevance. 
-                        Analyzed <strong>Campus Portals (Blackboard)</strong>: Found high security but poor UX for non-academic tasks.
-                    </p>
-                </div>
-
-                <div class="glass p-8 rounded-3xl border-l-4 border-green-500/50 hover:bg-slate-800/50 transition">
-                    <h3 class="text-green-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <i class="fas fa-lightbulb"></i> Innovation / Research Gap
-                    </h3>
-                    <ul class="text-sm text-slate-400 space-y-2 list-disc list-inside">
-                        <li><strong>Identity-Layered Commerce:</strong> Uses Amazon Cognito to enforce ".edu" only access (Trust-First).</li>
-                        <li><strong>Context-Aware Search:</strong> DynamoDB schema optimized for Course Codes (e.g., "CS101") vs generic keywords.</li>
-                        <li><strong>Serverless Scale:</strong> Zero-cost idle time using AWS Lambda.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <section id="methodology" class="space-y-12 relative">
-            <div class="text-center">
-                <h2 class="text-4xl font-black uppercase tracking-tight mb-2">Technical <span class="text-blue-500">Methodology</span></h2>
-                <p class="text-slate-500 text-sm font-mono">AWS SERVERLESS STACK</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="glass p-8 rounded-3xl text-center group hover:-translate-y-2 transition duration-300">
-                    <div class="w-16 h-16 mx-auto bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 text-blue-400 text-2xl group-hover:bg-blue-500 group-hover:text-white transition">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <h3 class="font-bold mb-2 uppercase text-xs tracking-widest">Data Layer</h3>
-                    <p class="text-xs text-slate-400 mb-2">Amazon DynamoDB (NoSQL)</p>
-                    <p class="text-[10px] text-slate-500 leading-relaxed">Single Table Design for storing Users, Listings, and Events. S
+        <section class="text-center">
+            <div class="inline-block px-4 py-1 border border-slate-800 rounded-full text-slate-500 text-[10px] font-mono mb-6 uppercase tracking-widest">ID: 2427030668, 242703
