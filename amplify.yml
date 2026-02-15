@@ -1,4 +1,3 @@
-cat <<EOF > amplify.yml
 version: 1
 frontend:
   phases:
@@ -10,4 +9,3 @@ frontend:
       - '**/*'
   cache:
     paths: []
-EOF
