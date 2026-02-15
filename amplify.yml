@@ -2,9 +2,11 @@ version: 1
 frontend:
   phases:
     build:
-      commands: []
+      commands:
+        - mkdir -p public
+        - cp *.html public/index.html
   artifacts:
-    baseDirectory: .
+    baseDirectory: public
     files:
       - '**/*'
   cache:
