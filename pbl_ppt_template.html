@@ -48,8 +48,8 @@
     <main class="max-w-6xl mx-auto px-6 pt-48 pb-32 space-y-32">
         
         <section class="text-center">
-            <div class="inline-block px-4 py-1 border border-slate-800 rounded-full text-slate-500 text-[10px] font-mono mb-6 uppercase tracking-widest">ID: [YOUR_REG_NO]</div>
-            <h1 class="text-6xl md:text-7xl font-extrabold mb-8 uppercase leading-tight"><span class="gradient-text uppercase">[Project Title Here]</span></h1>
+            <div class="inline-block px-4 py-1 border border-slate-800 rounded-full text-slate-500 text-[10px] font-mono mb-6 uppercase tracking-widest">ID: 2427030668, 24270300772</div>
+            <h1 class="text-6xl md:text-7xl font-extrabold mb-8 uppercase leading-tight"><span class="gradient-text uppercase">University Marketplace using AWS</span></h1>
             <p class="text-slate-400 max-w-2xl mx-auto italic text-lg leading-relaxed border-l-2 border-blue-500/30 pl-6 text-left">
                 "Hypothesis/Project Statement: Define the core research question or the primary objective of your development project."
             </p>
@@ -112,12 +112,17 @@
             <div class="flex flex-wrap justify-center gap-10">
                 <div class="glass px-12 py-8 rounded-[2rem] border-b-4 border-blue-600">
                     <p class="text-[9px] font-bold text-blue-500 mb-2 uppercase tracking-widest">Project Guide</p>
-                    <p class="font-black text-xl text-slate-100">[Guide Name]</p>
+                    <p class="font-black text-xl text-slate-100">Dr. Manmohan Sharma</p>
                 </div>
                 <div class="glass px-12 py-8 rounded-[2rem] border-b-4 border-slate-700">
                     <p class="text-[9px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Team Member 1</p>
-                    <p class="font-black text-xl text-slate-100">[Student Name]</p>
-                    <p class="text-[10px] text-slate-500 mt-1">[Reg No]</p>
+                    <p class="font-black text-xl text-slate-100">Anay Sahu</p>
+                    <p class="text-[10px] text-slate-500 mt-1">2427030668</p>
+                </div>
+                <div class="glass px-12 py-8 rounded-[2rem] border-b-4 border-slate-700">
+                    <p class="text-[9px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Team Member 2</p>
+                    <p class="font-black text-xl text-slate-100">Zane Sadiq</p>
+                    <p class="text-[10px] text-slate-500 mt-1">2427030772</p>
                 </div>
             </div>
         </section>
@@ -129,27 +134,6 @@
     </footer>
 
     <script>
-        // TIMER LOGIC
-        let sec = 0;
-        let timer = null;
-        function startTimer() {
-            timer = setInterval(() => {
-                sec++;
-                let m = Math.floor(sec / 60);
-                let s = sec % 60;
-                document.getElementById('displayTime').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                
-                if (sec >= 480 && sec < 600) { // 8-10 Mins Warning
-                    document.getElementById('timerContainer').classList.add('timer-warning');
-                    document.getElementById('timerIcon').classList.replace('fa-hourglass-start', 'fa-hourglass-half');
-                } else if (sec >= 600) { // 10 Mins Stop
-                    clearInterval(timer);
-                    document.getElementById('timerContainer').classList.replace('timer-warning', 'timer-stop');
-                    document.getElementById('displayTime').innerText = "10:00";
-                    document.getElementById('timerIcon').classList.replace('fa-hourglass-half', 'fa-hourglass-end');
-                }
-            }, 1000);
-        }
 
         // RESULTS CHART (Demo Data)
         const ctx = document.getElementById('resultsChart').getContext('2d');
@@ -178,4 +162,5 @@
 </body>
 
 </html>
+
 
