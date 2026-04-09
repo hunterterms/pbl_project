@@ -157,7 +157,7 @@ const Marketplace = () => {
                   </Heading>
                   
                   <Text fontSize="lg" fontWeight="bold" color="blue.600">
-                    ${item.price}
+                    ₹{item.price}
                   </Text>
                 </Stack>
 

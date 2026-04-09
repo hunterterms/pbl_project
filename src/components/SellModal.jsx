@@ -71,7 +71,7 @@ export default function SellModal({ isOpen, onClose }) {
           </FormControl>
 
           <FormControl mb={4} isRequired>
-            <FormLabel>Price ($)</FormLabel>
+            <FormLabel>Price (₹)</FormLabel>
             <Input type="number" placeholder="45" value={price} onChange={(e) => setPrice(e.target.value)} />
           </FormControl>
 

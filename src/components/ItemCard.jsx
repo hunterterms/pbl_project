@@ -41,7 +41,7 @@ const ItemCard = ({ product }) => {
           </Heading>
 
           <Text fontWeight="bold" fontSize="xl" color="blue.600">
-            ${product.price}
+            ₹{product.price}
           </Text>
 
           <Text color="gray.500" fontSize="sm" noOfLines={2}>

@@ -32,13 +32,28 @@ import {
   Moon, 
   Menu as MenuIcon, 
   X, 
-  User 
+  User,
+  CalendarPlus,
+  Users
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // 1. Added useLocation
 
 const Navbar = ({ onOpen }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen: isMobileOpen, onToggle: onMobileToggle } = useDisclosure();
+  const location = useLocation(); // 2. Get the current URL
+
+  // 3. Dynamic logic for the Call-To-Action (CTA) button
+  let ctaText = "Sell Item";
+  let CtaIcon = Plus;
+  
+  if (location.pathname === '/events') {
+    ctaText = "Create Event";
+    CtaIcon = CalendarPlus;
+  } else if (location.pathname === '/groups') {
+    ctaText = "Start Group";
+    CtaIcon = Users;
+  }
 
   return (
     <Box
@@ -53,7 +68,7 @@ const Navbar = ({ onOpen }) => {
       <Container maxW="container.xl" px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
           
-          {/* 1. Mobile Hamburger Menu Button */}
+          {/* Mobile Hamburger Menu Button */}
           <IconButton
             display={{ base: 'flex', md: 'none' }}
             onClick={onMobileToggle}
@@ -63,13 +78,13 @@ const Navbar = ({ onOpen }) => {
             mr={2}
           />
 
-          {/* 2. Logo & Desktop Links */}
+          {/* Logo & Desktop Links */}
           <Flex alignItems="center">
             <Heading size="md" color="blue.600" mr={8}>
               <Link to="/">UniHub</Link>
             </Heading>
             
-            {/* Desktop Nav Links (Hidden on Mobile) */}
+            {/* Desktop Nav Links */}
             <Stack direction={'row'} spacing={6} display={{ base: 'none', md: 'flex' }}>
               <NavLink to="/">Marketplace</NavLink>
               <NavLink to="/events">Events</NavLink>
@@ -77,7 +92,7 @@ const Navbar = ({ onOpen }) => {
             </Stack>
           </Flex>
 
-          {/* 3. Right Side Actions */}
+          {/* Right Side Actions */}
           <Flex alignItems={'center'} gap={2}>
             
             {/* Search Bar (Desktop only) */}
@@ -85,7 +100,7 @@ const Navbar = ({ onOpen }) => {
               <InputLeftElement pointerEvents="none">
                 <Search size={16} color="gray" />
               </InputLeftElement>
-              <Input placeholder="Search..." borderRadius="full" />
+              <Input placeholder={`Search ${location.pathname === '/' ? 'items' : location.pathname.substring(1)}...`} borderRadius="full" />
             </InputGroup>
 
             {/* Dark Mode Toggle */}
@@ -105,25 +120,25 @@ const Navbar = ({ onOpen }) => {
               aria-label="Notifications"
             />
 
-            {/* Sell Button (Triggers your onOpen prop) */}
+            {/* Dynamic CTA Button (Desktop) */}
             <Button
-              leftIcon={<Plus size={18} />}
+              leftIcon={<CtaIcon size={18} />}
               colorScheme={'blue'}
               size={'sm'}
-              onClick={onOpen}
-              display={{ base: 'none', md: 'flex' }} // Hide text button on mobile to save space
+              onClick={onOpen} // Note: Currently this always opens the Sell Modal. We can add more modals later!
+              display={{ base: 'none', md: 'flex' }} 
             >
-              Sell Item
+              {ctaText}
             </Button>
 
-            {/* Mobile Sell Icon (Visible only on mobile) */}
+            {/* Dynamic CTA Icon (Mobile) */}
              <IconButton
               display={{ base: 'flex', md: 'none' }}
-              icon={<Plus size={18} />}
+              icon={<CtaIcon size={18} />}
               colorScheme="blue"
               size="sm"
               onClick={onOpen}
-              aria-label="Sell Item"
+              aria-label={ctaText}
             />
 
             {/* User Profile Dropdown */}
@@ -143,7 +158,7 @@ const Navbar = ({ onOpen }) => {
           </Flex>
         </Flex>
 
-        {/* 4. Mobile Menu Collapse Area */}
+        {/* Mobile Menu Collapse Area */}
         <Collapse in={isMobileOpen} animateOpacity>
           <Box pb={4} display={{ md: 'none' }}>
             <VStack as={'nav'} spacing={4} align="stretch">
@@ -151,7 +166,7 @@ const Navbar = ({ onOpen }) => {
                 <InputLeftElement pointerEvents="none">
                   <Search size={16} color="gray" />
                 </InputLeftElement>
-                <Input placeholder="Search items..." borderRadius="full" />
+                <Input placeholder="Search..." borderRadius="full" />
               </InputGroup>
               <NavLink to="/">Marketplace</NavLink>
               <NavLink to="/events">Events</NavLink>
@@ -167,16 +182,21 @@ const Navbar = ({ onOpen }) => {
 };
 
 // Helper Component for Links
-const NavLink = ({ children, to }) => (
-  <Link to={to}>
-    <Text 
-      fontWeight="500" 
-      color={useColorModeValue('gray.600', 'gray.200')}
-      _hover={{ color: 'blue.500', textDecoration: 'none' }}
-    >
-      {children}
-    </Text>
-  </Link>
-);
+const NavLink = ({ children, to }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to; // Check if the link is the current page
+
+  return (
+    <Link to={to}>
+      <Text 
+        fontWeight="500" 
+        color={isActive ? 'blue.500' : useColorModeValue('gray.600', 'gray.200')} // Highlight active tab
+        _hover={{ color: 'blue.500', textDecoration: 'none' }}
+      >
+        {children}
+      </Text>
+    </Link>
+  );
+};
 
 export default Navbar;

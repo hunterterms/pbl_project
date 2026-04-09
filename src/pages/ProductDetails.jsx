@@ -59,6 +59,21 @@ export default function ProductDetails() {
     setIsSaved(!isSaved);
   };
 
+  // Helper function to format the date to DD/MM/YYYY
+  const formatDate = (dateString) => {
+    if (!dateString) return "Unknown date";
+    const date = new Date(dateString);
+    
+    // Fallback just in case the string isn't a valid date format
+    if (isNaN(date.getTime())) return dateString; 
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
   if (isLoading) return <Flex minH="100vh" align="center" justify="center"><Spinner size="xl" /></Flex>;
   if (!item) return <Container py={20} textAlign="center"><Heading>Item not found</Heading></Container>;
 
@@ -74,7 +89,7 @@ export default function ProductDetails() {
         <Stack spacing={6}>
           <Box>
             <Heading size="2xl">{item.title}</Heading>
-            <Text fontSize="3xl" fontWeight="bold" color="blue.500" mt={2}>${item.price}</Text>
+            <Text fontSize="3xl" fontWeight="bold" color="blue.500" mt={2}>₹{item.price}</Text>
           </Box>
           <Stack divider={<StackDivider />} spacing={4}>
             <Text fontSize="lg" color="gray.600">{item.description}</Text>
@@ -83,7 +98,8 @@ export default function ProductDetails() {
                 <Avatar src={`https://i.pravatar.cc/150?u=${item.id}`} mr={4} />
                 <Box>
                   <Text fontWeight="bold">{item.seller?.name || "Student Seller"}</Text>
-                  <Text fontSize="xs" color="gray.500">Posted on {item.postedDate}</Text>
+                  {/* Applied the formatDate function here */}
+                  <Text fontSize="xs" color="gray.500">Posted on {formatDate(item.postedDate)}</Text>
                 </Box>
               </Flex>
             </Box>
