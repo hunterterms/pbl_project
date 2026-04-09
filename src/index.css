@@ -1,0 +1,4 @@
+/* Reset default styles to let Chakra UI handle them */
+body {
+  margin: 0;
+}
