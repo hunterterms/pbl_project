@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ChakraProvider, useDisclosure } from '@chakra-ui/react';
+import { useDisclosure } from '@chakra-ui/react';
 
 // Import your components
+import AuthProvider from './auth/AuthProvider';
 import Navbar from './components/Navbar';
 import SellModal from './components/SellModal';
 import CreateEventModal from './components/CreateEventModal';
@@ -11,6 +12,7 @@ import Marketplace from './pages/Marketplace';
 import ProductDetails from './pages/ProductDetails';
 import Events from './pages/Events'; // 1. Import Events
 import Groups from './pages/Groups'; // 2. Import Groups
+import Profile from './pages/Profile';
 import useLocalStorage from './hooks/useLocalStorage';
 
 function App() {
@@ -22,8 +24,9 @@ function App() {
   const [createdEvents, setCreatedEvents] = useLocalStorage('unihub-events', []);
   const [createdGroups, setCreatedGroups] = useLocalStorage('unihub-groups', []);
 
+  // ChakraProvider (with the UniHub theme) is set up in main.jsx
   return (
-    <ChakraProvider>
+    <AuthProvider>
       <Router>
         <Navbar
           onSellItem={sellModal.onOpen}
@@ -36,6 +39,17 @@ function App() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/events" element={<Events createdEvents={createdEvents} onCreateEvent={eventModal.onOpen} />} /> {/* 3. Add Events Route */}
           <Route path="/groups" element={<Groups createdGroups={createdGroups} onStartGroup={groupModal.onOpen} />} /> {/* 4. Add Groups Route */}
+          <Route
+            path="/profile"
+            element={
+              <Profile
+                createdEvents={createdEvents}
+                createdGroups={createdGroups}
+                onCreateEvent={eventModal.onOpen}
+                onStartGroup={groupModal.onOpen}
+              />
+            }
+          />
         </Routes>
 
         <SellModal isOpen={sellModal.isOpen} onClose={sellModal.onClose} />
@@ -50,7 +64,7 @@ function App() {
           onCreate={(group) => setCreatedGroups((prev) => [group, ...prev])}
         />
       </Router>
-    </ChakraProvider>
+    </AuthProvider>
   );
 }
 

@@ -5,6 +5,7 @@ import {
 import { Clock, Lock, MapPin } from 'lucide-react';
 import MetaRow from './MetaRow';
 import { CURRENT_USER } from '../constants';
+import { useAuth } from '../auth/AuthContext';
 
 const EMBLEM_COLORS = ['orange', 'teal', 'pink', 'purple', 'green', 'cyan', 'red', 'yellow'];
 
@@ -16,6 +17,8 @@ const initialsOf = (name) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((
 
 // A student group, with a club-badge style emblem made from its initials
 export default function GroupCard({ group, isMine = false }) {
+  const { user } = useAuth();
+  const me = user ?? CURRENT_USER; // Your own avatar when you're signed in
   const color = colorFor(group.name);
   const emblemBg = useColorModeValue(`${color}.100`, `${color}.900`);
   const emblemFg = useColorModeValue(`${color}.800`, `${color}.100`);
@@ -73,7 +76,7 @@ export default function GroupCard({ group, isMine = false }) {
           {/* One avatar per member, up to 3. If you started the group, you're the first one. */}
           {Array.from({ length: Math.min(group.members, 3) }, (_, i) =>
             isMine && i === 0 ? (
-              <Avatar key="me" name={CURRENT_USER.name} bg="brand.500" color="white" borderColor="bg.surface" />
+              <Avatar key="me" name={me.name} src={me.picture} referrerPolicy="no-referrer" bg="brand.500" color="white" borderColor="bg.surface" />
             ) : (
               <Avatar key={i} name={`Member ${i + 1}`} src={`https://i.pravatar.cc/80?u=unihub-${group.id}-${i}`} borderColor="bg.surface" />
             )

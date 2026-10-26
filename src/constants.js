@@ -19,6 +19,9 @@ export const CATEGORY_COLORS = {
   Other: 'gray',
 };
 
-// There's no login yet, so everything you post is from the same placeholder user
+// Choices for "Year" on My Profile
+export const YEARS_OF_STUDY = ['1st year', '2nd year', '3rd year', '4th year', '5th year', 'Postgraduate', 'PhD', 'Alumni', 'Faculty or staff'];
+
+// Posts aren't linked to accounts yet, so this placeholder stands in for whoever posted them
 // (the items API also uses this name for new listings)
 export const CURRENT_USER = { name: 'Campus User' };
