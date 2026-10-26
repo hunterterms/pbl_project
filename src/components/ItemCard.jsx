@@ -1,60 +1,68 @@
+import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
-  Box,
-  Image,
-  Badge,
-  Text,
-  Stack,
-  Heading,
-  Button,
-  useColorModeValue,
+  AspectRatio, Avatar, Badge, Box, Center, Heading, HStack, Image, LinkBox, LinkOverlay, Skeleton, SkeletonText, Text
 } from '@chakra-ui/react';
+import { ImageOff } from 'lucide-react';
+import PriceTag from './PriceTag';
+import { CATEGORY_COLORS } from '../constants';
+import { timeAgo } from '../utils/format';
 
-const ItemCard = ({ product }) => {
+// A marketplace listing. The whole card links to the product page (LinkBox + LinkOverlay).
+const ItemCard = ({ item }) => {
   return (
-    <Box
-      maxW="sm"
+    <LinkBox
+      as="article"
+      bg="bg.surface"
       borderWidth="1px"
-      borderRadius="lg"
+      borderColor="border.default"
+      borderRadius="xl"
       overflow="hidden"
-      bg={useColorModeValue('white', 'gray.700')}
-      transition="transform 0.2s"
-      _hover={{ transform: 'scale(1.02)', boxShadow: 'lg' }}
+      transition="transform 0.2s, box-shadow 0.2s"
+      _hover={{ transform: 'translateY(-3px)', boxShadow: 'lg' }}
+      _focusWithin={{ boxShadow: 'outline' }}
     >
-      <Image
-        src={product.image || 'https://via.placeholder.com/300'}
-        alt={product.name}
-        h="200px"
-        w="100%"
-        objectFit="cover"
-      />
-
-      <Box p="6">
-        <Stack spacing={2}>
-          <Box display="flex" alignItems="baseline">
-            <Badge borderRadius="full" px="2" colorScheme="blue">
-              {product.category}
-            </Badge>
-          </Box>
-
-          <Heading size="md" fontWeight="semibold" lineHeight="short" noOfLines={1}>
-            {product.name}
-          </Heading>
-
-          <Text fontWeight="bold" fontSize="xl" color="blue.600">
-            ₹{product.price}
-          </Text>
-
-          <Text color="gray.500" fontSize="sm" noOfLines={2}>
-            {product.description}
-          </Text>
-
-          <Button colorScheme="blue" variant="outline" size="sm" mt={2}>
-            View Details
-          </Button>
-        </Stack>
+      <Box position="relative">
+        <AspectRatio ratio={4 / 3}>
+          {item.image ? (
+            <Image src={item.image} alt="" objectFit="cover" />
+          ) : (
+            <Center bg="bg.subtle" color="fg.muted"><ImageOff size={28} /></Center>
+          )}
+        </AspectRatio>
+        <PriceTag price={item.price} position="absolute" left={3} bottom={3} />
       </Box>
-    </Box>
+
+      <Box p={4}>
+        <Heading as="h3" size="sm" noOfLines={1}>
+          <LinkOverlay as={RouterLink} to={`/product/${item.id}`}>{item.title}</LinkOverlay>
+        </Heading>
+
+        <HStack mt={2} spacing={2}>
+          <Badge colorScheme={CATEGORY_COLORS[item.category] || 'gray'}>{item.category}</Badge>
+          {item.condition && <Text fontSize="sm" color="fg.muted" noOfLines={1}>{item.condition}</Text>}
+        </HStack>
+
+        <HStack mt={3} spacing={2} fontSize="sm" color="fg.muted">
+          <Avatar size="2xs" name={item.seller?.name} src={item.seller?.avatar} />
+          <Text flex="1" noOfLines={1}>{item.seller?.name || 'Student'}</Text>
+          {item.postedDate && (
+            <Text flexShrink={0} fontSize="xs" display={{ base: 'none', sm: 'block' }}>{timeAgo(item.postedDate)}</Text>
+          )}
+        </HStack>
+      </Box>
+    </LinkBox>
   );
 };
+
+// Placeholder with the same shape as ItemCard, shown while listings load
+export const ItemCardSkeleton = () => (
+  <Box bg="bg.surface" borderWidth="1px" borderColor="border.default" borderRadius="xl" overflow="hidden">
+    <AspectRatio ratio={4 / 3}><Skeleton /></AspectRatio>
+    <Box p={4}>
+      <SkeletonText noOfLines={3} spacing={3} skeletonHeight={3} />
+    </Box>
+  </Box>
+);
 
 export default ItemCard;
