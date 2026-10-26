@@ -1,75 +1,99 @@
-import React from 'react';
-import {
-  Box, Container, Heading, SimpleGrid, Text, Stack, Badge, Button, Flex, Spacer, useColorModeValue
-} from '@chakra-ui/react';
-import { Calendar, MapPin, Clock, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Box, Button, Container, Heading, SimpleGrid } from '@chakra-ui/react';
+import { CalendarPlus, CalendarX2, SearchX } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
+import SearchInput from '../components/SearchInput';
+import FilterChips from '../components/FilterChips';
+import EmptyState from '../components/EmptyState';
+import EventCard from '../components/EventCard';
+import { EVENT_CATEGORIES } from '../constants';
 
-// Dates are stored as YYYY-MM-DD and times as 24-hour HH:MM (the formats date/time inputs give us)
-const formatDate = (date) =>
-  new Date(`${date}T00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+// MOCK DATA: We will replace this with AWS fetch later
+const mockEvents = [
+  { id: '1', title: 'Computer Science Hackathon', date: '2026-10-15', startTime: '09:00', location: 'Innovation Lab', category: 'Academic', attendees: 45 },
+  { id: '2', title: 'Campus Music Festival', date: '2026-10-20', startTime: '18:00', location: 'Main Quad', category: 'Social', attendees: 120 },
+];
 
-const formatTime = (time) =>
-  new Date(`1970-01-01T${time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+// An event is over once its end time (or its start time, if it has no end) has passed
+const isPastEvent = (event) => new Date(`${event.date}T${event.endTime || event.startTime}`) < new Date();
+
+// Dates are YYYY-MM-DD and times are HH:MM, so comparing the strings sorts them by time
+const byDate = (a, b) => `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`);
+
+const GRID_COLUMNS = { base: 1, md: 2, xl: 3 };
 
 export default function Events({ createdEvents = [], onCreateEvent }) {
-  const cardBg = useColorModeValue('white', 'gray.800');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState('All');
 
-  // MOCK DATA: We will replace this with AWS fetch later
-  const mockEvents = [
-    { id: '1', title: 'Computer Science Hackathon', date: '2026-10-15', startTime: '09:00', location: 'Innovation Lab', category: 'Academic', attendees: 45 },
-    { id: '2', title: 'Campus Music Festival', date: '2026-10-20', startTime: '18:00', location: 'Main Quad', category: 'Social', attendees: 120 },
-  ];
+  const myEventIds = new Set(createdEvents.map((event) => event.id));
+  const query = searchTerm.trim().toLowerCase();
+  const isFiltering = query !== '' || category !== 'All';
 
-  // Events you create show up first
-  const events = [...createdEvents, ...mockEvents];
+  const events = [...createdEvents, ...mockEvents].filter((event) => {
+    const matchesSearch = !query || [event.title, event.location, event.hostedBy, event.description]
+      .some((text) => text?.toLowerCase().includes(query));
+    const matchesCategory = category === 'All' || event.category === category;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Soonest upcoming events first; past events go below, most recent first
+  const upcoming = events.filter((event) => !isPastEvent(event)).sort(byDate);
+  const past = events.filter(isPastEvent).sort((a, b) => byDate(b, a));
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setCategory('All');
+  };
+
+  let upcomingContent;
+  if (upcoming.length > 0) {
+    upcomingContent = (
+      <SimpleGrid columns={GRID_COLUMNS} spacing={6}>
+        {upcoming.map((event) => <EventCard key={event.id} event={event} isMine={myEventIds.has(event.id)} />)}
+      </SimpleGrid>
+    );
+  } else if (isFiltering) {
+    upcomingContent = (
+      <EmptyState
+        icon={SearchX}
+        title="No upcoming events match"
+        description="Try a different search or category."
+        action={<Button onClick={clearFilters}>Clear filters</Button>}
+      />
+    );
+  } else {
+    upcomingContent = (
+      <EmptyState
+        icon={CalendarX2}
+        title="No upcoming events"
+        description="Nothing's planned yet. Create one and it'll show up here."
+        action={<Button colorScheme="brand" leftIcon={<CalendarPlus size={18} />} onClick={onCreateEvent}>Create event</Button>}
+      />
+    );
+  }
 
   return (
-    <Box minH="100vh" py={8} bg={useColorModeValue('gray.50', 'gray.900')}>
-      <Container maxW="container.xl">
-        <Flex justify="space-between" align="center" mb={8}>
-          <Heading size="lg">Campus Events</Heading>
-          <Button colorScheme="blue" onClick={onCreateEvent}>Create Event</Button>
-        </Flex>
+    <Container maxW="container.xl" px={{ base: 4, md: 8 }} py={{ base: 8, md: 12 }}>
+      <PageHeader
+        title="Campus Events"
+        description="Workshops, fests and meetups happening around campus."
+        action={<Button w="full" colorScheme="brand" leftIcon={<CalendarPlus size={18} />} onClick={onCreateEvent}>Create event</Button>}
+      >
+        <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search events" />
+        <FilterChips options={['All', ...EVENT_CATEGORIES]} value={category} onChange={setCategory} label="Filter by category" />
+      </PageHeader>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-          {events.map(event => (
-            <Flex key={event.id} direction="column" bg={cardBg} p={5} rounded="lg" shadow="sm" borderWidth="1px">
-              <Flex gap={2} mb={3}>
-                <Badge colorScheme="purple">{event.category}</Badge>
-                {event.entryFee === 0 && <Badge colorScheme="green">Free</Badge>}
-                {event.entryFee > 0 && <Badge colorScheme="orange">₹{event.entryFee}</Badge>}
-              </Flex>
-              <Heading size="md" mb={2}>{event.title}</Heading>
+      {upcomingContent}
 
-              <Stack spacing={2} mb={4} color="gray.500" fontSize="sm">
-                <Flex align="center"><Calendar size={14} style={{ marginRight: '6px' }}/> {formatDate(event.date)}</Flex>
-                <Flex align="center">
-                  <Clock size={14} style={{ marginRight: '6px' }}/> {formatTime(event.startTime)}
-                  {event.endTime && ` – ${formatTime(event.endTime)}`}
-                </Flex>
-                <Flex align="center"><MapPin size={14} style={{ marginRight: '6px' }}/> {event.location}</Flex>
-                {event.hostedBy && (
-                  <Flex align="center"><User size={14} style={{ marginRight: '6px' }}/> Hosted by {event.hostedBy}</Flex>
-                )}
-              </Stack>
-
-              {event.description && (
-                <Text fontSize="sm" mb={4} noOfLines={2}>{event.description}</Text>
-              )}
-
-              {/* Pushes the footer to the bottom so it lines up across cards of different heights */}
-              <Spacer />
-
-              <Flex justify="space-between" align="center" mt={4}>
-                <Text fontSize="sm" color="gray.500">
-                  <b>{event.attendees}</b>{event.capacity && ` / ${event.capacity}`} attending
-                </Text>
-                <Button size="sm" colorScheme="blue" variant="outline">RSVP</Button>
-              </Flex>
-            </Flex>
-          ))}
-        </SimpleGrid>
-      </Container>
-    </Box>
+      {past.length > 0 && (
+        <Box as="section" mt={14}>
+          <Heading as="h2" size="md" mb={5} color="fg.muted">Past events</Heading>
+          <SimpleGrid columns={GRID_COLUMNS} spacing={6}>
+            {past.map((event) => <EventCard key={event.id} event={event} isPast isMine={myEventIds.has(event.id)} />)}
+          </SimpleGrid>
+        </Box>
+      )}
+    </Container>
   );
 }

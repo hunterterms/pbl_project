@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Box, Container, Stack, Text, Image, Flex, VStack, Button, Heading,
-  SimpleGrid, StackDivider, useColorModeValue, Avatar, Badge, Breadcrumb,
-  BreadcrumbItem, BreadcrumbLink, Spinner, useToast
+  AspectRatio, Avatar, Badge, Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Button, Container, Flex,
+  Heading, HStack, IconButton, Image, SimpleGrid, Skeleton, SkeletonText, Stack, Text, useToast
 } from '@chakra-ui/react';
-import { MessageCircle, Share2, Heart, ChevronRight } from 'lucide-react';
+import { ChevronRight, Heart, MessageCircle, SearchX, Share2 } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
+import PriceTag from '../components/PriceTag';
+import { CATEGORY_COLORS } from '../constants';
+import { formatDate } from '../utils/format';
+
+const API_URL = 'https://h7dv27961g.execute-api.us-east-1.amazonaws.com/items';
+
+// Same two-column shape as the real page, shown while the item loads
+const ProductSkeleton = () => (
+  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 6, md: 12 }}>
+    <AspectRatio ratio={4 / 3}><Skeleton borderRadius="xl" /></AspectRatio>
+    <Stack spacing={5}>
+      <Skeleton h="20px" w="140px" />
+      <Skeleton h="44px" />
+      <Skeleton h="52px" w="160px" />
+      <SkeletonText noOfLines={3} spacing={3} />
+    </Stack>
+  </SimpleGrid>
+);
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -17,7 +35,6 @@ export default function ProductDetails() {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        const API_URL = 'https://h7dv27961g.execute-api.us-east-1.amazonaws.com/items';
         const response = await fetch(API_URL);
         const data = await response.json();
         const foundItem = data.find((p) => String(p.id).trim() === String(id).trim());
@@ -39,9 +56,9 @@ export default function ProductDetails() {
   const handleShare = async () => {
     try {
       await navigator.share({ title: item.title, url: window.location.href });
-    } catch (err) {
+    } catch {
       navigator.clipboard.writeText(window.location.href);
-      toast({ title: "Link copied!", status: "info", duration: 2000 });
+      toast({ title: "Link copied", status: "info", duration: 2000 });
     }
   };
 
@@ -59,60 +76,73 @@ export default function ProductDetails() {
     setIsSaved(!isSaved);
   };
 
-  // Helper function to format the date to DD/MM/YYYY
-  const formatDate = (dateString) => {
-    if (!dateString) return "Unknown date";
-    const date = new Date(dateString);
-    
-    // Fallback just in case the string isn't a valid date format
-    if (isNaN(date.getTime())) return dateString; 
+  let content;
+  if (isLoading) {
+    content = <ProductSkeleton />;
+  } else if (!item) {
+    content = (
+      <EmptyState
+        icon={SearchX}
+        title="Item not found"
+        description="It may have been sold or removed by the seller."
+        action={<Button as={RouterLink} to="/" colorScheme="brand">Back to marketplace</Button>}
+      />
+    );
+  } else {
+    content = (
+      <>
+        <Breadcrumb spacing="8px" separator={<ChevronRight size={14} />} mb={6} fontSize="sm" color="fg.muted">
+          <BreadcrumbItem><BreadcrumbLink as={RouterLink} to="/">Marketplace</BreadcrumbLink></BreadcrumbItem>
+          <BreadcrumbItem isCurrentPage><BreadcrumbLink color="fg.default">{item.title}</BreadcrumbLink></BreadcrumbItem>
+        </Breadcrumb>
 
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const year = date.getFullYear();
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 6, md: 12 }} alignItems="start">
+          <AspectRatio ratio={4 / 3} borderRadius="xl" overflow="hidden" bg="bg.subtle">
+            <Image src={item.image} alt={item.title} objectFit="cover" />
+          </AspectRatio>
 
-    return `${day}/${month}/${year}`;
-  };
+          <Stack spacing={6}>
+            <Box>
+              <HStack spacing={2}>
+                <Badge colorScheme={CATEGORY_COLORS[item.category] || 'gray'}>{item.category}</Badge>
+                {item.condition && <Badge variant="outline" colorScheme="gray">{item.condition}</Badge>}
+              </HStack>
+              <Heading as="h1" mt={3} fontSize={{ base: '3xl', md: '4xl' }} lineHeight="1.15">{item.title}</Heading>
+              <PriceTag price={item.price} size="lg" mt={5} />
+            </Box>
 
-  if (isLoading) return <Flex minH="100vh" align="center" justify="center"><Spinner size="xl" /></Flex>;
-  if (!item) return <Container py={20} textAlign="center"><Heading>Item not found</Heading></Container>;
+            <Text fontSize="lg" lineHeight="tall">{item.description}</Text>
+
+            <Flex align="center" gap={4} p={4} bg="bg.subtle" borderRadius="xl">
+              <Avatar src={item.seller?.avatar || `https://i.pravatar.cc/150?u=${item.id}`} name={item.seller?.name} />
+              <Box>
+                <Text fontWeight="700">{item.seller?.name || "Student seller"}</Text>
+                {item.postedDate && <Text fontSize="sm" color="fg.muted">Posted on {formatDate(item.postedDate)}</Text>}
+              </Box>
+            </Flex>
+
+            <HStack spacing={3}>
+              <Button flex={1} colorScheme="brand" leftIcon={<MessageCircle size={18} />}>Contact seller</Button>
+              <Button
+                variant="outline"
+                colorScheme="pink"
+                leftIcon={<Heart size={18} fill={isSaved ? "currentColor" : "none"} />}
+                onClick={handleSave}
+                aria-pressed={isSaved}
+              >
+                {isSaved ? "Saved" : "Save"}
+              </Button>
+              <IconButton variant="outline" icon={<Share2 size={18} />} aria-label="Share" onClick={handleShare} />
+            </HStack>
+          </Stack>
+        </SimpleGrid>
+      </>
+    );
+  }
 
   return (
-    <Container maxW={'7xl'} py={10}>
-      <Breadcrumb spacing="8px" separator={<ChevronRight size={14} />} mb={6}>
-        <BreadcrumbItem><BreadcrumbLink as={RouterLink} to="/">Home</BreadcrumbLink></BreadcrumbItem>
-        <BreadcrumbItem isCurrentPage><BreadcrumbLink>{item.title}</BreadcrumbLink></BreadcrumbItem>
-      </Breadcrumb>
-
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={10}>
-        <Image rounded={'lg'} src={item.image} alt={item.title} fit={'cover'} w={'100%'} h={'500px'} boxShadow="lg" />
-        <Stack spacing={6}>
-          <Box>
-            <Heading size="2xl">{item.title}</Heading>
-            <Text fontSize="3xl" fontWeight="bold" color="blue.500" mt={2}>₹{item.price}</Text>
-          </Box>
-          <Stack divider={<StackDivider />} spacing={4}>
-            <Text fontSize="lg" color="gray.600">{item.description}</Text>
-            <Box bg="gray.50" p={4} rounded="md">
-              <Flex align="center">
-                <Avatar src={`https://i.pravatar.cc/150?u=${item.id}`} mr={4} />
-                <Box>
-                  <Text fontWeight="bold">{item.seller?.name || "Student Seller"}</Text>
-                  {/* Applied the formatDate function here */}
-                  <Text fontSize="xs" color="gray.500">Posted on {formatDate(item.postedDate)}</Text>
-                </Box>
-              </Flex>
-            </Box>
-          </Stack>
-          <Stack direction="row" spacing={4}>
-            <Button flex={2} colorScheme="blue" leftIcon={<MessageCircle />}>Contact Seller</Button>
-            <Button flex={1} variant="outline" colorScheme="pink" leftIcon={<Heart fill={isSaved ? "currentColor" : "none"} />} onClick={handleSave}>
-              {isSaved ? "Saved" : "Save"}
-            </Button>
-            <Button variant="ghost" onClick={handleShare}><Share2 /></Button>
-          </Stack>
-        </Stack>
-      </SimpleGrid>
+    <Container maxW="container.xl" px={{ base: 4, md: 8 }} py={{ base: 6, md: 10 }}>
+      {content}
     </Container>
   );
 }
