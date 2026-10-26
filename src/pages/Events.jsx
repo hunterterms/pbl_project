@@ -7,18 +7,13 @@ import FilterChips from '../components/FilterChips';
 import EmptyState from '../components/EmptyState';
 import EventCard from '../components/EventCard';
 import { EVENT_CATEGORIES } from '../constants';
+import { byDate, isPastEvent } from '../utils/events';
 
 // MOCK DATA: We will replace this with AWS fetch later
 const mockEvents = [
   { id: '1', title: 'Computer Science Hackathon', date: '2026-10-15', startTime: '09:00', location: 'Innovation Lab', category: 'Academic', attendees: 45 },
   { id: '2', title: 'Campus Music Festival', date: '2026-10-20', startTime: '18:00', location: 'Main Quad', category: 'Social', attendees: 120 },
 ];
-
-// An event is over once its end time (or its start time, if it has no end) has passed
-const isPastEvent = (event) => new Date(`${event.date}T${event.endTime || event.startTime}`) < new Date();
-
-// Dates are YYYY-MM-DD and times are HH:MM, so comparing the strings sorts them by time
-const byDate = (a, b) => `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`);
 
 const GRID_COLUMNS = { base: 1, md: 2, xl: 3 };
 

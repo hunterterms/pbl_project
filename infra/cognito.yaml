@@ -1,0 +1,240 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  UniHub sign-in. A Cognito user pool where students sign in with Google or Apple only (no passwords),
+  set up to stay inside the Cognito free tier. See infra/README.md.
+
+Parameters:
+  DomainPrefix:
+    Type: String
+    Description: >-
+      Your sign-in address becomes https://<prefix>.auth.<region>.amazoncognito.com. Lowercase letters,
+      numbers and hyphens. It must be unique in the region and can't contain "aws", "amazon" or "cognito".
+    AllowedPattern: ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$
+  CallbackUrls:
+    Type: CommaDelimitedList
+    Default: http://localhost:5173/profile
+    Description: >-
+      Where Cognito may send people after they sign in: the /profile page of every place UniHub runs,
+      separated by commas (e.g. http://localhost:5173/profile,https://unihub.example.com/profile).
+  LogoutUrls:
+    Type: CommaDelimitedList
+    Default: http://localhost:5173/
+    Description: >-
+      Where Cognito may send people after they log out: the home page of every place UniHub runs
+      (e.g. http://localhost:5173/,https://unihub.example.com/).
+  GoogleClientId:
+    Type: String
+    Description: OAuth client ID from the Google Cloud console (Google Auth Platform > Clients).
+    MinLength: 1
+  GoogleClientSecret:
+    Type: String
+    Description: The client secret of that Google OAuth client.
+    NoEcho: true
+    MinLength: 1
+  AppleServicesId:
+    Type: String
+    Default: ''
+    Description: >-
+      Services ID from the Apple Developer portal (e.g. com.example.unihub.signin).
+      Leave the four Apple settings empty to start with Google only.
+  AppleTeamId:
+    Type: String
+    Default: ''
+    Description: Your 10-character Apple Developer Team ID.
+  AppleKeyId:
+    Type: String
+    Default: ''
+    Description: The 10-character Key ID of the Sign in with Apple key.
+  ApplePrivateKey:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Contents of the .p8 key file from Apple, including the BEGIN and END lines.
+
+Rules:
+  AppleNeedsEverySetting:
+    RuleCondition: !Not [!Equals [!Ref AppleServicesId, '']]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref AppleTeamId, '']]
+        AssertDescription: Set AppleTeamId too (or leave AppleServicesId empty for Google only).
+      - Assert: !Not [!Equals [!Ref AppleKeyId, '']]
+        AssertDescription: Set AppleKeyId too (or leave AppleServicesId empty for Google only).
+      - Assert: !Not [!Equals [!Ref ApplePrivateKey, '']]
+        AssertDescription: Set ApplePrivateKey too (or leave AppleServicesId empty for Google only).
+
+Conditions:
+  UseApple: !Not [!Equals [!Ref AppleServicesId, '']]
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    # Keep the accounts if the stack is deleted, or if an update would have to replace the pool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: !Sub ${AWS::StackName}-users
+      # Lite is the cheapest plan and has everything UniHub uses. Without this line Cognito picks Essentials,
+      # which also has the 10,000 free monthly users but costs more per user after that.
+      UserPoolTier: LITE
+      # Turns off the public SignUp API, so nobody can make a username/password account.
+      # Google and Apple users are still created automatically the first time they sign in.
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      # There are no passwords to reset, and this way Cognito never sends recovery emails or texts
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: admin_only
+            Priority: 1
+      # The details students can edit on My Profile (custom:course, custom:year, custom:bio).
+      # Custom attributes can't be changed or removed once the pool exists, so think twice before editing these.
+      Schema:
+        - Name: course
+          AttributeDataType: String
+          Mutable: true
+          StringAttributeConstraints:
+            MinLength: '0'
+            MaxLength: '80'
+        - Name: year
+          AttributeDataType: String
+          Mutable: true
+          StringAttributeConstraints:
+            MinLength: '0'
+            MaxLength: '20'
+        - Name: bio
+          AttributeDataType: String
+          Mutable: true
+          StringAttributeConstraints:
+            MinLength: '0'
+            MaxLength: '160'
+
+  # The free Cognito-hosted address (a custom domain would need a certificate and DNS records)
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Ref DomainPrefix
+      # The classic hosted UI. (Managed login, version 2, isn't available on the Lite plan, and UniHub
+      # skips Cognito's pages anyway by sending people straight to Google or Apple.)
+      ManagedLoginVersion: 1
+
+  # Google and Apple are added as Cognito's built-in social providers, not as generic OIDC providers:
+  # social sign-ins get 10,000 free monthly users, OIDC/SAML sign-ins only 50.
+  GoogleProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref UserPool
+      ProviderName: Google
+      ProviderType: Google
+      ProviderDetails:
+        client_id: !Ref GoogleClientId
+        client_secret: !Ref GoogleClientSecret
+        authorize_scopes: openid email profile
+      # Cognito copies these from Google every time someone signs in
+      AttributeMapping:
+        username: sub
+        email: email
+        name: name
+        given_name: given_name
+        family_name: family_name
+        picture: picture
+
+  AppleProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Condition: UseApple
+    Properties:
+      UserPoolId: !Ref UserPool
+      ProviderName: SignInWithApple
+      ProviderType: SignInWithApple
+      ProviderDetails:
+        client_id: !Ref AppleServicesId
+        team_id: !Ref AppleTeamId
+        key_id: !Ref AppleKeyId
+        private_key: !Ref ApplePrivateKey
+        authorize_scopes: email name
+      # Apple only shares the name the first time someone signs in, and never shares a photo
+      AttributeMapping:
+        username: sub
+        email: email
+        name: name
+        given_name: firstName
+        family_name: lastName
+
+  # The web app. Public client (no secret), authorization code flow with PKCE.
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    DependsOn: GoogleProvider
+    Metadata:
+      # Makes CloudFormation create the Apple provider before this client when there is one
+      # (DependsOn can't name AppleProvider, because that resource is skipped without Apple settings)
+      WaitFor: !If [UseApple, !Ref AppleProvider, '']
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: unihub-web
+      GenerateSecret: false
+      # No COGNITO entry here, so there's no username/password sign-in at all
+      SupportedIdentityProviders:
+        - Google
+        - !If [UseApple, SignInWithApple, !Ref AWS::NoValue]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      # aws.cognito.signin.user.admin lets signed-in users read and edit their own profile
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+        - aws.cognito.signin.user.admin
+      CallbackURLs: !Ref CallbackUrls
+      LogoutURLs: !Ref LogoutUrls
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      # Signed in for 30 days; the 1-hour tokens are refreshed in the background
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      ReadAttributes:
+        - email
+        - email_verified
+        - name
+        - given_name
+        - family_name
+        - picture
+        - nickname
+        - custom:course
+        - custom:year
+        - custom:bio
+      # Must include every attribute mapped from Google/Apple, or their sign-ins fail.
+      # nickname (the display name) and the custom attributes are what students edit on My Profile.
+      WriteAttributes:
+        - email
+        - name
+        - given_name
+        - family_name
+        - picture
+        - nickname
+        - custom:course
+        - custom:year
+        - custom:bio
+
+Outputs:
+  UserPoolId:
+    Description: Put this in .env.local as VITE_COGNITO_USER_POOL_ID
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Description: Put this in .env.local as VITE_COGNITO_CLIENT_ID
+    Value: !GetAtt UserPoolClient.ClientId
+  CognitoDomain:
+    Description: Put this in .env.local as VITE_COGNITO_DOMAIN
+    Value: !Sub ${DomainPrefix}.auth.${AWS::Region}.amazoncognito.com
+  IdentityProviderRedirectUri:
+    Description: Add this as the redirect URI in Google Cloud and as the Return URL in Apple's Services ID
+    Value: !Sub https://${DomainPrefix}.auth.${AWS::Region}.amazoncognito.com/oauth2/idpresponse
+  AuthProviders:
+    Description: Put this in .env.local as VITE_AUTH_PROVIDERS
+    Value: !If [UseApple, 'google,apple', google]

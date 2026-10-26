@@ -11,13 +11,6 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Avatar,
-  AvatarBadge,
   useColorMode,
   useDisclosure,
   Collapse,
@@ -32,11 +25,11 @@ import {
   Moon, 
   Menu as MenuIcon, 
   X, 
-  User,
   CalendarPlus,
   Users
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom'; // 1. Added useLocation
+import AccountMenu from './AccountMenu';
 
 const Navbar = ({ onSellItem, onCreateEvent, onStartGroup }) => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -144,20 +137,8 @@ const Navbar = ({ onSellItem, onCreateEvent, onStartGroup }) => {
               aria-label={ctaText}
             />
 
-            {/* User Profile Dropdown */}
-            <Menu>
-              <MenuButton as={Button} rounded={'full'} variant={'link'} cursor={'pointer'} minW={0}>
-                <Avatar size={'sm'} src={'https://bit.ly/dan-abramov'}>
-                  <AvatarBadge boxSize="1.25em" bg="green.500" />
-                </Avatar>
-              </MenuButton>
-              <MenuList alignItems={'center'}>
-                <MenuItem icon={<User size={16}/>}>My Profile</MenuItem>
-                <MenuItem>My Orders</MenuItem>
-                <MenuDivider />
-                <MenuItem color="red.400">Logout</MenuItem>
-              </MenuList>
-            </Menu>
+            {/* Sign-in button, or the signed-in user's account menu */}
+            <AccountMenu />
           </Flex>
         </Flex>
 
@@ -188,12 +169,13 @@ const Navbar = ({ onSellItem, onCreateEvent, onStartGroup }) => {
 const NavLink = ({ children, to }) => {
   const location = useLocation();
   const isActive = location.pathname === to; // Check if the link is the current page
+  const inactiveColor = useColorModeValue('gray.600', 'gray.200'); // Hooks can't be called conditionally
 
   return (
     <Link to={to}>
       <Text 
         fontWeight="500" 
-        color={isActive ? 'blue.500' : useColorModeValue('gray.600', 'gray.200')} // Highlight active tab
+        color={isActive ? 'blue.500' : inactiveColor} // Highlight active tab
         _hover={{ color: 'blue.500', textDecoration: 'none' }}
       >
         {children}
