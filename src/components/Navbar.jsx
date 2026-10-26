@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom'; // 1. Added useLocation
 
-const Navbar = ({ onOpen }) => {
+const Navbar = ({ onSellItem, onCreateEvent, onStartGroup }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen: isMobileOpen, onToggle: onMobileToggle } = useDisclosure();
   const location = useLocation(); // 2. Get the current URL
@@ -46,13 +46,16 @@ const Navbar = ({ onOpen }) => {
   // 3. Dynamic logic for the Call-To-Action (CTA) button
   let ctaText = "Sell Item";
   let CtaIcon = Plus;
-  
+  let onCtaClick = onSellItem;
+
   if (location.pathname === '/events') {
     ctaText = "Create Event";
     CtaIcon = CalendarPlus;
+    onCtaClick = onCreateEvent;
   } else if (location.pathname === '/groups') {
     ctaText = "Start Group";
     CtaIcon = Users;
+    onCtaClick = onStartGroup;
   }
 
   return (
@@ -125,7 +128,7 @@ const Navbar = ({ onOpen }) => {
               leftIcon={<CtaIcon size={18} />}
               colorScheme={'blue'}
               size={'sm'}
-              onClick={onOpen} // Note: Currently this always opens the Sell Modal. We can add more modals later!
+              onClick={onCtaClick}
               display={{ base: 'none', md: 'flex' }} 
             >
               {ctaText}
@@ -137,7 +140,7 @@ const Navbar = ({ onOpen }) => {
               icon={<CtaIcon size={18} />}
               colorScheme="blue"
               size="sm"
-              onClick={onOpen}
+              onClick={onCtaClick}
               aria-label={ctaText}
             />
 
